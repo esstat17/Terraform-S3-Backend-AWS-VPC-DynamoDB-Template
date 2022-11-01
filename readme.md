@@ -7,6 +7,10 @@
 ## Intro
 
 Why was this repository created? Well, using S3 as a Backend is somewhat tricky. You need to provide resources (such as S3 Buckets) first, before adding the S3 block `backend "s3" {}` block. It is not good practice to manually create S2 Buckets since the AWS provision's life cycle should rely on Terraform State File. You will occasionally encounter errors when you do that. Like what you can see below:
+```bash
+Error: Error inspecting states in the \"local\" backend:
+S3 bucket does not exist.
+```
 
 So what's this setup.sh can do is to create S3 Buckets and dynamoDB resources first and run the terraform provision again with the "S3" backend. Specifically, this repo solves the following:
 

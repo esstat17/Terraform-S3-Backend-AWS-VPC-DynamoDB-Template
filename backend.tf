@@ -10,18 +10,16 @@
 # See terraform registry @https://registry.terraform.io/providers/hashicorp/aws/latest/docs
 provider "aws" {
   region  = "us-west-1"
-  profile = "jenkins-terraform"
-  # access_key = var.aws_access_key
-  #  secret_key = var.aws_secret_key
+  profile = "app-terraform"
   # shared_credentials_files = ["~/.aws/credentials"]
   # shared_config_files      = ["~/.aws/config"]
 }
 
 terraform {
   required_version = ">= 1.2.0"
-
   #
-  # The line below will be autofilled when you run the ./setup.sh bash script
+  # The line below will be autofilled when you 
+  # run the ./setup.sh bash script
   ##BACKEND_BLOCK##
 
   required_providers {
@@ -31,4 +29,3 @@ terraform {
     }
   }
 }
-# edited

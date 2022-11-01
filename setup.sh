@@ -115,7 +115,7 @@ fi
 
 # Set up some variables we'll need
 TF_FILE=backend.tf
-BACKEND_TF=$(dirname ${BASH_SOURCE[0]})/terraform.tf
+BACKEND_TF=$(dirname ${BASH_SOURCE[0]})/${TF_FILE}
 TEMP=$(mktemp)
 TERRAFORM_VERSION=$(terraform version -json | jq -r '.terraform_version')
 BACKEND_BLOCK='backend "s3" { \
@@ -177,7 +177,7 @@ info "\n\nJust copy and run this whole command below"
 echo "$ git checkout HEAD -- terraform.tf && \
 terraform init -migrate-state -force-copy && \
 terraform destroy -auto-approve && \
-echo \"# edited\" >> ./terraform.tf"
+echo \"# edited\" >> $TF_FILE"
 echo
 echo
 exit 0
