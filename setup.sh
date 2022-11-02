@@ -163,13 +163,16 @@ if ! git diff-index --quiet --no-ext-diff HEAD -- $TF_BACKEND $TF_BACKEND_S3; th
   rm -f *.lock.hcl
   rm -f errored.tfstate
 fi
-echo $APP_NAME;
-exit 0;
+
 echo
 printf "\r\033[00;35;1m
 --------------------------------------------------------------------------
 We are now running the terraform commands
 -------------------------------------------------------------------------\033[0m"
+
+# Find and replace "yourappname" string to your nominated app name
+sed "s/##yourappname##/$APP_NAME/g" > $TEMP
+mv $TEMP $BACKEND_TF
 
 info "\n\n\nThe first phase is initializing.."
 # Initialize the working directory, 
@@ -178,7 +181,7 @@ terraform_run "init" "First"
 
 info "Entering into the second phase.."
 cat $BACKEND_TF | 
-sed "s/##BACKEND_BLOCK##/$BACKEND_BLOCK/g" > $TEMP
+sed "s/##BACKEND_BLOCK##/$BACKEND_BLOCK/" > $TEMP
 mv $TEMP $BACKEND_TF
 
 # Running the terraform commands
