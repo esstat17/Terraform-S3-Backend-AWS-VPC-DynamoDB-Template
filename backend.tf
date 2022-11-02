@@ -18,7 +18,7 @@ terraform {
   required_version = ">= 1.2.0"
   #
   # The line below will be autofilled when you 
-  # run the ./setup.sh bash script
+  # run the bash script
   ##BACKEND_BLOCK##
 
   required_providers {
