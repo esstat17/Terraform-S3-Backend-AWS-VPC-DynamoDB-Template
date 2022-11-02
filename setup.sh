@@ -129,20 +129,6 @@ TF_BACKEND_S3="backend-s3.tf"
 BACKEND_TF=$(dirname ${BASH_SOURCE[0]})/${TF_BACKEND}
 TEMP=$(mktemp)
 TERRAFORM_VERSION=$(terraform version -json | jq -r '.terraform_version')
-# BACKEND_BLOCKx="\n
-# backend \"s3\" {\n
-#   # Must be the same value with aws_s3_bucket name\n
-#   bucket         = \"${APP_NAME}-tf-state-v1\" # bug: it has to provision it first\n
-#   key            = \"${APP_NAME}/terraform.tfstate\"\n
-#   region         = \"us-west-1\"\n
-#   encrypt        = true\n
-#   dynamodb_table = \"${APP_NAME}-tf-state-locking\" # Must be the same value with aws_dynamodb_table name\n
-#   # profile        = \"${APP_NAME}\"\n
-#   # shared_credentials_file = \"\$HOME/.aws/credentials\"\n
-# }\n"
-
-
-## testing block to be deleted
 BACKEND_BLOCK='backend "s3" { \
     # Must be the same value with the aws_s3_bucket name \
     bucket         = "yourappname-tf-state-v1" # bug: it has to provision it first \
@@ -150,15 +136,11 @@ BACKEND_BLOCK='backend "s3" { \
     region         = "us-west-1" \
     encrypt        = true \
     dynamodb_table = "yourappname-tf-state-locking" # Must be the same value with aws_dynamodb_table name \
-    profile        = "yourappname-terraform" \
+    # profile        = "your-iam-profile" \
     # shared_credentials_file = "$HOME\/.aws\/credentials" \
   } \
 '
-cat $TF_BACKEND | sed "s/##BACKEND_BLOCK##/$BACKEND_BLOCK/" | \
-sed "s/yourappname/$APP_NAME/" > $TEMP
-mv $TEMP $TF_BACKEND 
 
-exit 0
 # Check that this is your first time running this script. If not, we'll reset
 # all local state and restart from scratch!
 # Simulating you had this script run already
@@ -199,8 +181,9 @@ info "\n\n\nThe first phase is initializing.."
 terraform_run "init" "First"
 
 info "Entering into the second phase.."
-cat $TF_BACKEND | sed "s/##BACKEND_BLOCK##/$BACKEND_BLOCK/" > $TEMP
-mv $TEMP $TF_BACKEND
+cat $TF_BACKEND | sed "s/##BACKEND_BLOCK##/$BACKEND_BLOCK/" | \
+sed "s/yourappname/$APP_NAME/" > $TEMP
+mv $TEMP $TF_BACKEND 
 
 # Running the terraform commands
 terraform_run "init -migrate-state -force-copy" "Second"
