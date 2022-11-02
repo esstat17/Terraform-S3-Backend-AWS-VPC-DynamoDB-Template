@@ -147,7 +147,7 @@ BACKEND_BLOCK="backend \"s3\" { \
 # git add -A
   # git reset --mixed HEAD
 
-if ! git diff-index --quiet --no-ext-diff HEAD --; then
+if ! git diff-index --quiet --no-ext-diff HEAD -- $TF_BACKEND $TF_BACKEND_S3; then
   echo "It looks like you may have run this script before! Backup \".copy\" file will be automatically generated for safety."
   echo
   echo "Re-running it will reset any changes you've made to $TF_BACKEND and $TF_BACKEND_S3."
@@ -157,7 +157,7 @@ if ! git diff-index --quiet --no-ext-diff HEAD --; then
   cp $TF_BACKEND "$TF_BACKEND.copy"
   cp $TF_BACKEND_S3 "$TF_BACKEND_S3.copy"
   # Restoring from the git chached
-  git checkout HEAD -- $TF_BACKEND
+  git checkout HEAD -- $TF_BACKEND $TF_BACKEND_S3
   # rm -rf .terraform
   rm -f .terraform/terraform.tfstate
   rm -f *.lock.hcl
