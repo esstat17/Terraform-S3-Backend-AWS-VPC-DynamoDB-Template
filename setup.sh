@@ -2,6 +2,16 @@
 set -euo pipefail
 
 START=$(date +%s)
+if [ -z "$1" ]; then
+    LOGS+=" - ERROR: (1) PARAMS required"
+	echo $LOGS
+	echo "usage:"
+	echo "./setup.sh your-app"
+  printf "\r\033[00;35mMust be lowercase.\033[0m\n"
+	exit 255;
+fi
+
+APP_NAME=$1
 
 info() {
   printf "\r\033[00;35m$1\033[0m\n"
@@ -10,11 +20,9 @@ info() {
 success() {
   printf "\r\033[00;32m$1\033[0m\n"
 }
-
 fail() {
   printf "\r\033[0;31m$1\033[0m\n"
 }
-
 divider() {
   printf "\r\033[0;1m========================================================================\033[0m\n"
 }
@@ -97,6 +105,8 @@ if [ $installedTerraformVersion -lt $minTerraformVersion ]; then
   terraform version
   exit 1
 fi
+
+# Check if AWS credentials and config files is available
 CONFIG_FILE="$HOME/.aws/config"
 CREDENTIALS_FILE="$HOME/.aws/credentials"
 # TOKEN=$(jq -j --arg h "$HOST" '.credentials[$h].token' "$CREDENTIALS_FILE")
@@ -114,20 +124,22 @@ if [[ ! -f $CREDENTIALS_FILE || ! -f $CONFIG_FILE ]]; then
 fi
 
 # Set up some variables we'll need
-TF_FILE=backend.tf
-BACKEND_TF=$(dirname ${BASH_SOURCE[0]})/${TF_FILE}
+TF_BACKEND="backend.tf"
+TF_BACKEND_S3="backend-s3.tf"
+BACKEND_TF=$(dirname ${BASH_SOURCE[0]})/${TF_BACKEND}
 TEMP=$(mktemp)
 TERRAFORM_VERSION=$(terraform version -json | jq -r '.terraform_version')
-BACKEND_BLOCK='backend "s3" { \
+BACKEND_BLOCK="backend \"s3\" { \
     # Must be the same value with aws_s3_bucket name \
-    bucket         = "jenkins-tf-state-v1" # bug: it has to provision it first \
-    key            = "jenkins\/terraform.tfstate" \
-    region         = "us-west-1" \
+    bucket         = \"${APP_NAME}-tf-state-v1\" # bug: it has to provision it first \
+    key            = \"${APP_NAME}_Name\/terraform.tfstate\" \
+    region         = \"us-west-1\" \
     encrypt        = true \
-    dynamodb_table = "jenkins-tf-state-locking" # Must be the same value with aws_dynamodb_table name \
-    profile        = "jenkins-terraform" \
-    # shared_credentials_file = "$HOME\/.aws\/credentials" \
-}'
+    dynamodb_table = \"${APP_NAME}-tf-state-locking\" # Must be the same value with aws_dynamodb_table name \
+    profile        = \"${APP_NAME}-terraform\" \
+    # shared_credentials_file = \"\$HOME\/.aws\/credentials\" \
+    } \
+    "
 
 # Check that this is your first time running this script. If not, we'll reset
 # all local state and restart from scratch!
@@ -135,18 +147,24 @@ BACKEND_BLOCK='backend "s3" { \
 # git add -A
   # git reset --mixed HEAD
 
-if ! git diff-index --quiet --no-ext-diff HEAD -- $TF_FILE; then
-  echo "It looks like you may have run this script before! Re-running it will reset any
-  changes you've made to $TF_FILE."
+if ! git diff-index --quiet --no-ext-diff HEAD --; then
+  echo "It looks like you may have run this script before! Backup \".copy\" file will be automatically generated for safety."
+  echo
+  echo "Re-running it will reset any changes you've made to $TF_BACKEND and $TF_BACKEND_S3."
   echo
   pause_for_confirmation
-   # Restoring from the git chached
-  git checkout HEAD -- $TF_FILE
- # rm -rf .terraform
+  # Creating a backup file
+  cp $TF_BACKEND "$TF_BACKEND.copy"
+  cp $TF_BACKEND_S3 "$TF_BACKEND_S3.copy"
+  # Restoring from the git chached
+  git checkout HEAD -- $TF_BACKEND
+  # rm -rf .terraform
   rm -f .terraform/terraform.tfstate
   rm -f *.lock.hcl
   rm -f errored.tfstate
 fi
+echo $APP_NAME;
+exit 0;
 echo
 printf "\r\033[00;35;1m
 --------------------------------------------------------------------------
@@ -160,7 +178,7 @@ terraform_run "init" "First"
 
 info "Entering into the second phase.."
 cat $BACKEND_TF | 
-sed "s/##BACKEND_BLOCK##/$BACKEND_BLOCK/" > $TEMP
+sed "s/##BACKEND_BLOCK##/$BACKEND_BLOCK/g" > $TEMP
 mv $TEMP $BACKEND_TF
 
 # Running the terraform commands
@@ -168,16 +186,15 @@ terraform_run "init -migrate-state -force-copy" "Second"
 
 END=$(date +%s)
 DIFF=$(( $END - $START ))
-info "It took $DIFF seconds to run this provision. \n\n"
 divider
-success "\n\nCongratulations! It looks your provision is complete.\n\n"
+success "\n\nCongratulations! It took $DIFF seconds to comple. \n\n"
 divider
 info "\n\nDon't forget to destroy it if it is not in use."
 info "\n\nJust copy and run this whole command below"
 echo "$ git checkout HEAD -- terraform.tf && \
 terraform init -migrate-state -force-copy && \
 terraform destroy -auto-approve && \
-echo \"# edited\" >> $TF_FILE"
+echo \"# edited\" >> ./terraform.tf"
 echo
 echo
 exit 0

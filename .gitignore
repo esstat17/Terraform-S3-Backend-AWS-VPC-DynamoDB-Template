@@ -36,3 +36,6 @@ terraform.rc
 
 #terraform lock file
 .terraform.lock*
+
+# Backup files
+*.copy
