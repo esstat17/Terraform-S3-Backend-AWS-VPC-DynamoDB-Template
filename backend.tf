@@ -16,11 +16,9 @@ provider "aws" {
 
 terraform {
   required_version = ">= 1.2.0"
-  #
-  # The line below will be autofilled when you 
-  # run the bash script
+  
+  # BACKEND_BLOCK will be autofilled when you run the bash script
   ##BACKEND_BLOCK##
-
   required_providers {
     aws = {
       source  = "hashicorp/aws"
