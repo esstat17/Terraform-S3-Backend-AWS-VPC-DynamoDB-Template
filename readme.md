@@ -43,8 +43,11 @@ git clone https://github.com/esstat17/Terraform-S3-Backend-AWS-VPC-DynamoDB-Temp
 Change Directory to project folder and run the script
 * Initializing the script, installing package dependencies, terraform plan and deployments
 ```bash
-cd Terraform-S3-Backend-AWS-VPC-DynamoDB-Template/ && \
-./setup.sh
+cd Terraform-S3-Backend-AWS-VPC-DynamoDB-Template/
+```
+To run the script
+```bash
+./setup.sh your-app-name
 ```
 To undo all provisions
 * Undo all commands above or revert them to the 0 state.

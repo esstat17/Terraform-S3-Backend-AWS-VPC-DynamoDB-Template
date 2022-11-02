@@ -195,10 +195,10 @@ success "\n\nCongratulations! It took $DIFF seconds to comple. \n\n"
 divider
 info "\n\nDon't forget to destroy it if it is not in use."
 info "\n\nJust copy and run this whole command below"
-echo "$ git checkout HEAD -- terraform.tf && \
+echo "$ git checkout HEAD -- $TF_BACKEND && \
 terraform init -migrate-state -force-copy && \
 terraform destroy -auto-approve && \
-echo \"# edited\" >> ./terraform.tf"
+echo \"# edited\" >> ./$TF_BACKEND"
 echo
 echo
 exit 0
