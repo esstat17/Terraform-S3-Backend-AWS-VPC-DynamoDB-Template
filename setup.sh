@@ -132,11 +132,11 @@ TERRAFORM_VERSION=$(terraform version -json | jq -r '.terraform_version')
 BACKEND_BLOCK="backend \"s3\" { \
     # Must be the same value with aws_s3_bucket name \
     bucket         = \"${APP_NAME}-tf-state-v1\" # bug: it has to provision it first \
-    key            = \"${APP_NAME}_Name\/terraform.tfstate\" \
+    key            = \"${APP_NAME}\/terraform.tfstate\" \
     region         = \"us-west-1\" \
     encrypt        = true \
     dynamodb_table = \"${APP_NAME}-tf-state-locking\" # Must be the same value with aws_dynamodb_table name \
-    profile        = \"${APP_NAME}-terraform\" \
+    # profile        = \"${APP_NAME}\" \
     # shared_credentials_file = \"\$HOME\/.aws\/credentials\" \
     } \
     "
@@ -163,7 +163,7 @@ if ! git diff-index --quiet --no-ext-diff HEAD -- $TF_BACKEND $TF_BACKEND_S3; th
   rm -f *.lock.hcl
   rm -f errored.tfstate
 fi
-
+exit 0
 echo
 printf "\r\033[00;35;1m
 --------------------------------------------------------------------------
@@ -171,8 +171,9 @@ We are now running the terraform commands
 -------------------------------------------------------------------------\033[0m"
 
 # Find and replace "yourappname" string to your nominated app name
-sed "s/##yourappname##/$APP_NAME/g" > $TEMP
-mv $TEMP $BACKEND_TF
+cat $TF_BACKEND_S3 | sed "s/yourappname/$APP_NAME/g" > $TEMP
+mv $TEMP $TF_BACKEND_S3
+echo
 
 info "\n\n\nThe first phase is initializing.."
 # Initialize the working directory, 
@@ -180,9 +181,8 @@ info "\n\n\nThe first phase is initializing.."
 terraform_run "init" "First"
 
 info "Entering into the second phase.."
-cat $BACKEND_TF | 
-sed "s/##BACKEND_BLOCK##/$BACKEND_BLOCK/" > $TEMP
-mv $TEMP $BACKEND_TF
+cat $TF_BACKEND | sed "s/##BACKEND_BLOCK##/$BACKEND_BLOCK/" > $TEMP
+mv $TEMP $TF_BACKEND
 
 # Running the terraform commands
 terraform_run "init -migrate-state -force-copy" "Second"

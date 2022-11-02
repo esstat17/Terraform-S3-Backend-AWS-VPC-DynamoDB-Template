@@ -27,7 +27,7 @@ resource "aws_s3_bucket_versioning" "yourappname_bucket_versioning" {
   }
 }
 #see @https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_server_side_encryption_configuration
-# To avoid unnecessary billing for encryption usage
+# To avoid unnecessary billing for usage encryption resources
 /*
 resource "aws_kms_key" "yourappname_tf_key" {
   description             = "This key is used to encrypt bucket objects"
