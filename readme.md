@@ -8,7 +8,7 @@
 
 Why was this repository created? Well, using S3 as a Backend is somewhat tricky. You need to provide resources (such as S3 Buckets) first, before adding the S3 block `backend "s3" {}` block. It is not good practice to manually create S2 Buckets since the AWS provision's life cycle should rely on Terraform State File. You will occasionally encounter errors when you do that. Like what you can see below:
 ```bash
-Error: Error inspecting states in the \"local\" backend:
+Error: Error inspecting states in the "local" backend:
 S3 bucket does not exist.
 ```
 
@@ -52,7 +52,7 @@ To run the script
 To undo all provisions
 * Undo all commands above or revert them to the 0 state.
 ```bash
-git checkout HEAD -- terraform.tf && terraform init -migrate-state -force-copy && terraform destroy -auto-approve && echo "# edited" >> ./terraform.tf
+git checkout HEAD -- backend.tf && terraform init -migrate-state -force-copy && terraform destroy -auto-approve && echo "# edited" >> ./backend.tf
 ```
 
 ## Help
@@ -64,7 +64,7 @@ Just reach me if you need help.
 
 Contributors names and contact info
 
-[@esstat7](https://twitter.com/esstat17)
+[@esstat17](https://twitter.com/esstat17)
 
 ## Version History
 * 0.1.0
